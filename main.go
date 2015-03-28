@@ -10,7 +10,7 @@ import (
 // Sets up application's configuration
 func prepareApp(c *cli.Context) (err error) {
 	cfg.build(c)
-	err = os.MkdirAll(cfg.CacherDir, 0755)
+	err = os.MkdirAll(cfg.BackupDir, 0755)
 	check(err)
 	mtimes.restore()
 	return
@@ -18,7 +18,7 @@ func prepareApp(c *cli.Context) (err error) {
 
 func main() {
 	app := cli.NewApp()
-	app.Name = "cacher"
+	app.Name = "vx-cache-tool"
 	app.Version = version()
 	app.Authors = authors()
 	app.Usage = "Vexor(tm) cache management tool"
@@ -26,15 +26,15 @@ func main() {
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
 			Name:  "config, f",
-			Value: "cacher.cfg",
+			Value: "vx-cache-tool.cfg",
 			Usage: "config file",
 		},
 
 		cli.StringFlag{
-			Name:   "cacher_dir, d",
-			Usage:  "cacher working directory",
-			Value:  filepath.Join(os.Getenv("HOME"), ".cacher"),
-			EnvVar: "CACHER_DIR",
+			Name:   "backup_dir, d",
+			Usage:  "directory for the tool's own technical backups",
+			Value:  filepath.Join(os.Getenv("HOME"), ".vx-cache-tool"),
+			EnvVar: "VX_CACHE_TOOL_DIR",
 		},
 	}
 

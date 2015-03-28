@@ -1,7 +1,7 @@
 GO=gom
 GOFLAGS=-race
 SOURCES=*.go
-EXECUTABLE=cacher_go
+EXECUTABLE=vx-cache-tool
 
 # If the first argument is "run"...
 ifeq (run,$(firstword $(MAKECMDGOALS)))
