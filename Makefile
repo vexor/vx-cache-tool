@@ -27,3 +27,6 @@ clean_bundle:
 
 run: $(EXECUTABLE)
 	./$(EXECUTABLE) $(RUN_ARGS)
+
+gom:
+	go get github.com/mattn/gom
