@@ -2,5 +2,6 @@
 
 ~~~shell
 make gom
+make all
 make run
 ~~~
