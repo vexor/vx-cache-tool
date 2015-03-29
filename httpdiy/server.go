@@ -8,7 +8,7 @@ import (
 )
 
 func runServer(c *cli.Context) {
-	log.Println("server: starting at localhost:4242")
+	log.Println("server: starting at localhost:4242; press CTRL+C to exit")
 
 	http.HandleFunc("/urls/r123456", fetchUrlHandler)
 	http.HandleFunc("/storage/fetch.tgz", fetchFileHandler)
