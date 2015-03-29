@@ -1,7 +1,7 @@
 GO=gom
 GOFLAGS=-race
 SOURCES=*.go
-EXECUTABLE=httpdiy
+EXE=httpdiy
 
 # If the first argument is "run"...
 ifeq (run,$(firstword $(MAKECMDGOALS)))
@@ -11,22 +11,22 @@ RUN_ARGS := $(wordlist 2,$(words $(MAKECMDGOALS)),$(MAKECMDGOALS))
 $(eval $(RUN_ARGS):;@:)
 endif
 
-all: bundle $(EXECUTABLE)
+all: bundle $(EXE)
 
 bundle:
 	gom install
 
-$(EXECUTABLE): $(SOURCES)
+$(EXE): $(SOURCES)
 	$(GO) build $(GOFLAGS)
 
-clean: $(EXECUTABLE)
-	rm -f $(EXECUTABLE)
+clean: $(EXE)
+	rm -f $(EXE)
 
 clean_bundle:
 	rm -rf _vendor
 
-run: $(EXECUTABLE)
-	./$(EXECUTABLE) $(RUN_ARGS)
+run: $(EXE)
+	./$(EXE) $(RUN_ARGS)
 
 gom:
 	go get github.com/mattn/gom
