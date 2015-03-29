@@ -20,7 +20,7 @@ func runServer(c *cli.Context) {
 
 func fetchUrlHandler(w http.ResponseWriter, req *http.Request) {
 	log.Println(req.Method, req.URL)
-	io.WriteString(w, "http://localhost/storage/fetch.tgz")
+	io.WriteString(w, "http://localhost:4242/storage/fetch.tgz")
 }
 
 func fetchFileHandler(w http.ResponseWriter, req *http.Request) {
