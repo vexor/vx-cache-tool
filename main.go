@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"github.com/codegangsta/cli"
 	"os"
 	"path/filepath"
@@ -56,10 +55,8 @@ func main() {
 		{
 			Name:    "push",
 			Aliases: []string{"p"},
-			Usage:   "TODO: WRITEME",
-			Action: func(c *cli.Context) {
-				fmt.Println("pushing")
-			},
+			Usage:   "pushes cache archive to the specified url",
+			Action:  doPush,
 		},
 	}
 
