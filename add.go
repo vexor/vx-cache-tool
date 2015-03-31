@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sync"
 	"time"
 )
 
@@ -13,7 +12,6 @@ import (
 func doAdd(c *cli.Context) {
 	log.Println("adding: started")
 
-	var wg sync.WaitGroup
 	paths := c.Args()
 
 	for _, path := range paths {
@@ -27,16 +25,11 @@ func doAdd(c *cli.Context) {
 		os.MkdirAll(path, 0755)
 		mtimes[path] = time.Now().Unix()
 
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			warner := func() {
-				log.Println(path, "is not yet cached")
-			}
-			tar(warner, "x", cfg.FetchTar, path)
-		}()
+		warner := func() {
+			log.Println(path, "is not yet cached")
+		}
+		tar(warner, "x", cfg.FetchTar, path)
 	}
-	wg.Wait()
 
 	mtimes.store()
 
