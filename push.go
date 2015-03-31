@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"github.com/codegangsta/cli"
 	"log"
 	"os"
@@ -13,6 +12,14 @@ func doPush(c *cli.Context) {
 
 	if isCacheChanged() {
 		log.Println("changes detected, packing new archive")
+
+		saveMd5Sums()
+
+		args := []string{cfg.Md5File}
+		for dir := range mtimes {
+			args = append(args, dir)
+		}
+		tar(nil, "c", cfg.PushTar, args...)
 	} else {
 		log.Println("nothing changed, not updating cache")
 	}
@@ -46,7 +53,7 @@ func isFileUnchanged(file string, mtime int64) bool {
 	} else {
 		if md5sum, ok := getMd5Sums()[file]; ok {
 			md5, _ := fileMd5(file)
-			return bytes.Compare(md5sum, md5) == 0
+			return md5sum == md5
 		} else {
 			return false
 		}
