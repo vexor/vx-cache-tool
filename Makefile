@@ -19,7 +19,7 @@ bundle:
 $(EXE): $(SOURCES)
 	$(GO) build $(GOFLAGS)
 
-clean: $(EXE)
+clean:
 	rm -f $(EXE)
 
 clean_bundle:
