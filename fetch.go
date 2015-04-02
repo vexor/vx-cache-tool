@@ -2,9 +2,7 @@ package main
 
 import (
 	"github.com/codegangsta/cli"
-	"io/ioutil"
 	"log"
-	"net/http"
 	"os"
 	"os/exec"
 )
@@ -12,11 +10,11 @@ import (
 func doFetch(c *cli.Context) {
 	log.Println("fetching: started")
 
-	fetchUrls := c.Args()
+	fetchAccessUrls := c.Args()
 	isFetched := false
 
-	for _, fetchUrl := range fetchUrls {
-		storageUrl, err := getStorageUrl(fetchUrl)
+	for _, fetchAccessUrl := range fetchAccessUrls {
+		storageUrl, err := getStorageUrl(fetchAccessUrl)
 		if err == nil {
 			err = fetchCacheArchive(storageUrl)
 			if err == nil {
@@ -38,24 +36,6 @@ func doFetch(c *cli.Context) {
 	}
 
 	log.Println("fetching: finished")
-}
-
-func getStorageUrl(fetchUrl string) (string, error) {
-	log.Println("requesting cache archive location")
-	res, err := http.Get(fetchUrl)
-	if err != nil {
-		log.Println(err)
-		return "", err
-	}
-	body, err := ioutil.ReadAll(res.Body)
-	res.Body.Close()
-	if err != nil {
-		log.Println(err)
-		return "", err
-	}
-	storageUrl := string(body)
-	log.Println("received cache location at", storageUrl)
-	return storageUrl, nil
 }
 
 func fetchCacheArchive(storageUrl string) (err error) {

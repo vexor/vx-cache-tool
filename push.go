@@ -1,11 +1,22 @@
 package main
 
 import (
+	"bytes"
+	b64 "encoding/base64"
+	"fmt"
 	"github.com/codegangsta/cli"
+	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 )
+
+type ChunkInfo struct {
+	Chunk  string
+	Digest string
+}
 
 func doPush(c *cli.Context) {
 	log.Println("pushing: starting")
@@ -20,10 +31,17 @@ func doPush(c *cli.Context) {
 			args = append(args, dir)
 		}
 		tar(nil, "c", cfg.PushTar, args...)
+
+		pushAccessUrl := c.Args()[0]
+		storageUrl, err := getStorageUrl(pushAccessUrl)
+		if err == nil {
+			pushCacheArchive(storageUrl)
+		} else {
+			fmt.Println("failed to retrieve cache url")
+		}
 	} else {
 		log.Println("nothing changed, not updating cache")
 	}
-	// pushUrl := c.Args()[0]
 
 	log.Println("pushing: finishing")
 }
@@ -85,4 +103,116 @@ func withEachRegularFile(f func(path string, mtime int64)) {
 			},
 		)
 	}
+}
+
+func pushCacheArchive(uri string) {
+	chunks := splitPushTar()
+
+	args := []string{
+		"-XPUT",
+		"-H", "x-ms-blob-type: BlockBlob",
+		"-s",
+		"-S",
+		"-m", "60",
+		"-d", "",
+		uri,
+	}
+	cmd := exec.Command("curl", args...)
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		os.Exit(1)
+	}
+
+	fmt.Print("uploading chunks ")
+	res := false
+	for _, chunk := range chunks {
+		chunkUrl := fmt.Sprintf("%s&comp=block&blockid=%s", uri, url.QueryEscape(chunk.Digest))
+		args := []string{
+			"-s",
+			"-S",
+			"-m", "60",
+			"-T",
+			chunk.Chunk,
+			chunkUrl,
+		}
+		cmd := exec.Command("curl", args...)
+		_, err := cmd.CombinedOutput()
+		if err == nil {
+			fmt.Print(".")
+			res = true
+		} else {
+			res = false
+			break
+		}
+	}
+	if res {
+		fmt.Println(" OK")
+	} else {
+		fmt.Println(" FAIL")
+		os.Exit(1)
+	}
+}
+
+func commitChunks(chunks []ChunkInfo, uri string) {
+	var xmlBuffer bytes.Buffer
+	chunksFile := filepath.Join(cfg.BackupDir, "chunks.xml")
+
+	xmlBuffer.WriteString("<?xml version=\"1.0\" encoding=\"utf-8\"?>\n")
+	xmlBuffer.WriteString("<BlockList>\n")
+	for _, chunk := range chunks {
+		xmlBuffer.WriteString(fmt.Sprintf("<Latest>%s</Latest>\n", chunk.Digest))
+	}
+	xmlBuffer.WriteString("</BlockList>\n")
+	ioutil.WriteFile(chunksFile, xmlBuffer.Bytes(), 0644)
+
+	fmt.Print("committing chunks")
+	args := []string{
+		"-s",
+		"-S",
+		"-m", "60",
+		"-H", "x-ms-version: 2011-08-18",
+		"-T",
+		chunksFile,
+		fmt.Sprintf("%s&comp=blocklist", uri),
+	}
+	cmd := exec.Command("curl", args...)
+	_, err := cmd.CombinedOutput()
+	if err == nil {
+		fmt.Println(" OK")
+	} else {
+		fmt.Println(" FAIL")
+	}
+}
+
+func splitPushTar() []ChunkInfo {
+	res := []ChunkInfo{}
+	args := []string{
+		"-a", "8",
+		"-b", "4m",
+		cfg.PushTar,
+		fmt.Sprintf("%s.", cfg.PushTar),
+	}
+	cmd := exec.Command("split", args...)
+
+	wd, _ := os.Getwd()
+	defer os.Chdir(wd)
+
+	os.Chdir(cfg.BackupDir)
+	_, err := cmd.CombinedOutput()
+	if err != nil {
+		fmt.Println("could not split archive to chunks")
+		return res
+	}
+
+	chunks, _ := filepath.Glob(fmt.Sprintf("%s.*", cfg.PushTar))
+	for _, chunk := range chunks {
+		md5Digest, _ := fileMd5(chunk)
+		encodedDigest := b64.StdEncoding.EncodeToString([]byte(md5Digest))
+
+		res = append(res, ChunkInfo{
+			Chunk:  chunk,
+			Digest: encodedDigest,
+		})
+	}
+	return res
 }
