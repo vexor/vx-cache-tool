@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os/exec"
 )
 
@@ -16,7 +15,7 @@ func tar(errCallback func(), flag string, tarFileName string, args ...string) {
 		if errCallback != nil {
 			errCallback()
 		} else {
-			log.Printf("FAILED: %s => %s", cmd.Args, out)
+			fmt.Printf("FAILED: %s => %s", cmd.Args, out)
 		}
 	}
 }

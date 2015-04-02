@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/codegangsta/cli"
 	"io/ioutil"
-	"log"
 	"net/url"
 	"os"
 	"os/exec"
@@ -19,10 +18,8 @@ type ChunkInfo struct {
 }
 
 func doPush(c *cli.Context) {
-	log.Println("pushing: starting")
-
 	if isCacheChanged() {
-		log.Println("changes detected, packing new archive")
+		fmt.Println("changes detected, packing new archive")
 
 		saveMd5Sums()
 
@@ -40,10 +37,8 @@ func doPush(c *cli.Context) {
 			fmt.Println("failed to retrieve cache url")
 		}
 	} else {
-		log.Println("nothing changed, not updating cache")
+		fmt.Println("nothing changed, not updating cache")
 	}
-
-	log.Println("pushing: finishing")
 }
 
 func isCacheChanged() (res bool) {
@@ -56,7 +51,7 @@ func isCacheChanged() (res bool) {
 				if isFileUnchanged(path, mtime) {
 					return
 				} else {
-					log.Println(path, "was modified")
+					fmt.Println(path, "was modified")
 					res = true
 				}
 			},

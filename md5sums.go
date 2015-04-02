@@ -6,7 +6,6 @@ import (
 	"gopkg.in/yaml.v2"
 	"io"
 	"io/ioutil"
-	"log"
 	"os"
 )
 
@@ -54,7 +53,7 @@ func fileMd5(filePath string) (string, error) {
 }
 
 func saveMd5Sums() {
-	log.Println("calculating checksums")
+	fmt.Println("calculating checksums")
 	newMd5Sums := make(Md5Sums)
 
 	withEachRegularFile(

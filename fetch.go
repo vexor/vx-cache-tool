@@ -1,15 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"github.com/codegangsta/cli"
-	"log"
 	"os"
 	"os/exec"
 )
 
 func doFetch(c *cli.Context) {
-	log.Println("fetching: started")
-
 	fetchAccessUrls := c.Args()
 	isFetched := false
 
@@ -24,18 +22,16 @@ func doFetch(c *cli.Context) {
 	}
 
 	if isFetched {
-		log.Println("cache archive fetched")
-		log.Println("extracting checksums")
+		fmt.Println("cache archive fetched")
+		fmt.Println("extracting checksums")
 		warner := func() {
-			log.Println("checksums aren't yet calculated, skipping")
+			fmt.Println("checksums aren't yet calculated, skipping")
 		}
 		tar(warner, "x", cfg.FetchTar, cfg.Md5File)
 	} else {
-		log.Printf("could not download cache")
+		fmt.Println("could not download cache")
 		os.Remove(cfg.FetchTar)
 	}
-
-	log.Println("fetching: finished")
 }
 
 func fetchCacheArchive(storageUrl string) (err error) {
@@ -51,7 +47,7 @@ func fetchCacheArchive(storageUrl string) (err error) {
 	cmd := exec.Command("curl", args...)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		log.Printf("FAILED: %s => %s", cmd.Args, out)
+		fmt.Printf("FAILED: %s => %s", cmd.Args, out)
 	}
 	return
 }
