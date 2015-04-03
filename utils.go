@@ -7,9 +7,9 @@ import (
 	"os"
 )
 
-func check(e error) {
+func check(e error, blah ...string) {
 	if e != nil {
-		fmt.Fprintln(os.Stderr, e)
+		fmt.Fprintln(os.Stderr, "FAIL: =>", e, "=>", blah)
 		os.Exit(1)
 	}
 }

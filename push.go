@@ -113,10 +113,8 @@ func pushCacheArchive(uri string) {
 		uri,
 	}
 	cmd := exec.Command("curl", args...)
-	_, err := cmd.CombinedOutput()
-	if err != nil {
-		os.Exit(1)
-	}
+	out, err := cmd.CombinedOutput()
+	check(err, string(out))
 
 	fmt.Print("uploading chunks ")
 	res := false
@@ -146,6 +144,8 @@ func pushCacheArchive(uri string) {
 		fmt.Println(" FAIL")
 		os.Exit(1)
 	}
+
+	commitChunks(chunks, uri)
 }
 
 func commitChunks(chunks []ChunkInfo, uri string) {
