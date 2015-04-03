@@ -1,1 +1,2 @@
 gom 'github.com/codegangsta/cli'
+gom 'github.com/gorilla/mux'

@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/codegangsta/cli"
+	"github.com/gorilla/mux"
 	"io"
 	"log"
 	"net/http"
@@ -10,10 +11,13 @@ import (
 func runServer(c *cli.Context) {
 	log.Println("server: starting at localhost:4242; press CTRL+C to exit")
 
-	http.HandleFunc("/urls/r123456", fetchUrlHandler)
-	http.HandleFunc("/storage/fetch.tgz", fetchFileHandler)
-	http.HandleFunc("/urls/w123456", pushUrlHandler)
-	http.HandleFunc("/storage", pushFileHandler)
+	r := mux.NewRouter()
+
+	r.HandleFunc("/urls/r123456", fetchUrlHandler)
+	r.HandleFunc("/storage/fetch.tgz", fetchFileHandler)
+	r.HandleFunc("/urls/w123456", pushUrlHandler)
+	r.HandleFunc("/storage{params:.*}", pushFileHandler)
+	http.Handle("/", r)
 
 	log.Fatal(http.ListenAndServe("localhost:4242", nil))
 
