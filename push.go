@@ -117,7 +117,11 @@ func pushCacheArchive(uri string) {
 	check(err, string(out))
 
 	fmt.Print("uploading chunks ")
+
+	// channel here
 	res := false
+
+	// parallelize within here
 	for _, chunk := range chunks {
 		chunkUrl := fmt.Sprintf("%s&comp=block&blockid=%s", uri, url.QueryEscape(chunk.Digest))
 		args := []string{
@@ -129,15 +133,26 @@ func pushCacheArchive(uri string) {
 			chunkUrl,
 		}
 		cmd := exec.Command("curl", args...)
+
+		// go ...
 		_, err := cmd.CombinedOutput()
 		if err == nil {
-			fmt.Print(".")
+			fmt.Print(".") // to the outer goroutine
+			// to channel
 			res = true
 		} else {
+			// to channel
 			res = false
 			break
 		}
+
 	}
+
+	// here's the channel receiver & goroutines dispatcher
+	// (on false just wait for spawned threads finish and report fail)
+
+	// wait here
+
 	if res {
 		fmt.Println(" OK")
 	} else {
