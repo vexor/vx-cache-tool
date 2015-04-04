@@ -118,41 +118,43 @@ func pushCacheArchive(uri string) {
 
 	fmt.Print("uploading chunks ")
 
-	// channel here
-	res := false
+	mux := []chan bool{}
 
-	// parallelize within here
 	for _, chunk := range chunks {
-		chunkUrl := fmt.Sprintf("%s&comp=block&blockid=%s", uri, url.QueryEscape(chunk.Digest))
-		args := []string{
-			"-s",
-			"-S",
-			"-m", "60",
-			"-T",
-			chunk.Chunk,
-			chunkUrl,
-		}
-		cmd := exec.Command("curl", args...)
+		chunk := chunk
+		ch := make(chan bool)
+		mux = append(mux, ch)
+		go func(ch chan bool) {
+			chunkUrl := fmt.Sprintf("%s&comp=block&blockid=%s", uri, url.QueryEscape(chunk.Digest))
+			args := []string{
+				"-s",
+				"-S",
+				"-m", "60",
+				"-T",
+				chunk.Chunk,
+				chunkUrl,
+			}
+			cmd := exec.Command("curl", args...)
 
-		// go ...
-		_, err := cmd.CombinedOutput()
-		if err == nil {
-			fmt.Print(".") // to the outer goroutine
-			// to channel
+			_, err := cmd.CombinedOutput()
+			if err == nil {
+				ch <- true
+			} else {
+				ch <- false
+			}
+		}(ch)
+	}
+
+	res := false
+	for _, ch := range mux {
+		if <-ch {
+			fmt.Print(".")
 			res = true
 		} else {
-			// to channel
 			res = false
 			break
 		}
-
 	}
-
-	// here's the channel receiver & goroutines dispatcher
-	// (on false just wait for spawned threads finish and report fail)
-
-	// wait here
-
 	if res {
 		fmt.Println(" OK")
 	} else {
