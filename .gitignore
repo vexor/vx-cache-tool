@@ -1,2 +1,3 @@
-_vendor
-vx-cache-tool
+_tags
+_build
+*.native
