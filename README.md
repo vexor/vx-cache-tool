@@ -3,5 +3,5 @@
 ~~~shell
 make gom
 make all
-make run
+./vx-cache-tool
 ~~~
